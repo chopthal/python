@@ -20,6 +20,7 @@ class MyWindow(QMainWindow, form_class):
         self.pushButton_3.clicked.connect(self.pushButton_3_clicked)
         self.pushButton_4.clicked.connect(self.pushButton_4_clicked)
 
+
     def pushButton_clicked(self):
         self.resultVal = self.resultVal - 1
         self.label.setText(str(self.resultVal))

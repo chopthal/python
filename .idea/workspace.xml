@@ -20,10 +20,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="44d6259a-87a5-42ba-bbc0-fe2e16e6437b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/iMeasy_PyQt.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/iMeasy_PyQt.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/untitled.py" beforeDir="false" afterPath="$PROJECT_DIR$/untitled.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -58,10 +58,11 @@
   </component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Project\iMeasyPython" />
       <recent name="C:\Python\iMeasy_PyQt" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.findCircles">
+  <component name="RunManager" selected="Python.imagePrac">
     <configuration name="findCircles" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="iMeasy_PyQt" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -75,6 +76,27 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/findCircles.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <configuration name="imagePrac" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="iMeasy_PyQt" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/imagePrac.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -106,6 +128,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.imagePrac" />
         <item itemvalue="Python.findCircles" />
         <item itemvalue="Python.untitled" />
       </list>
@@ -134,8 +157,13 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="WindowStateProjectService">
+    <state x="186" y="111" key="#imagePrac" timestamp="1592481755413">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="186" y="111" key="#imagePrac/0.0.1920.1040@0.0.1920.1040" timestamp="1592481755413" />
     <state x="2106" y="115" key="#untitled" timestamp="1592472347022">
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
@@ -144,25 +172,46 @@
       <screen x="1920" y="0" width="1920" height="1040" />
     </state>
     <state x="2266" y="271" key="EnvironmentVariablesDialog/0.0.1920.1040/1920.0.1920.1040@1920.0.1920.1040" timestamp="1592472344059" />
-    <state width="936" height="281" key="GridCell.Tab.0.bottom" timestamp="1592473851900">
-      <screen x="1920" y="0" width="1920" height="1040" />
+    <state width="936" height="347" key="GridCell.Tab.0.bottom" timestamp="1592493753334">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="936" height="281" key="GridCell.Tab.0.bottom/0.0.1920.1040/1920.0.1920.1040@1920.0.1920.1040" timestamp="1592473851900" />
-    <state width="936" height="281" key="GridCell.Tab.0.center" timestamp="1592473851900">
-      <screen x="1920" y="0" width="1920" height="1040" />
+    <state width="936" height="347" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1592493753334" />
+    <state width="936" height="347" key="GridCell.Tab.0.center" timestamp="1592493753334">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="936" height="281" key="GridCell.Tab.0.center/0.0.1920.1040/1920.0.1920.1040@1920.0.1920.1040" timestamp="1592473851900" />
-    <state width="936" height="281" key="GridCell.Tab.0.left" timestamp="1592473851900">
-      <screen x="1920" y="0" width="1920" height="1040" />
+    <state width="936" height="347" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1592493753334" />
+    <state width="936" height="347" key="GridCell.Tab.0.left" timestamp="1592493753334">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="936" height="281" key="GridCell.Tab.0.left/0.0.1920.1040/1920.0.1920.1040@1920.0.1920.1040" timestamp="1592473851900" />
-    <state width="936" height="281" key="GridCell.Tab.0.right" timestamp="1592473851900">
-      <screen x="1920" y="0" width="1920" height="1040" />
+    <state width="936" height="347" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1592493753334" />
+    <state width="936" height="347" key="GridCell.Tab.0.right" timestamp="1592493753334">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state width="936" height="281" key="GridCell.Tab.0.right/0.0.1920.1040/1920.0.1920.1040@1920.0.1920.1040" timestamp="1592473851900" />
-    <state x="1920" y="168" key="SettingsEditor" timestamp="1592473245198">
-      <screen x="1920" y="0" width="1920" height="1040" />
+    <state width="936" height="347" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1592493753334" />
+    <state width="936" height="347" key="GridCell.Tab.1.bottom" timestamp="1592493753334">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="936" height="347" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1592493753334" />
+    <state width="936" height="347" key="GridCell.Tab.1.center" timestamp="1592493753334">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="936" height="347" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1592493753334" />
+    <state width="936" height="347" key="GridCell.Tab.1.left" timestamp="1592493753334">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="936" height="347" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1592493753334" />
+    <state width="936" height="347" key="GridCell.Tab.1.right" timestamp="1592493753334">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="936" height="347" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1592493753334" />
+    <state x="634" y="124" key="SettingsEditor" timestamp="1592482250769">
+      <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="1920" y="168" key="SettingsEditor/0.0.1920.1040/1920.0.1920.1040@1920.0.1920.1040" timestamp="1592473245198" />
+    <state x="634" y="124" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1592482250769" />
   </component>
 </project>
