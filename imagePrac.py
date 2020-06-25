@@ -2,8 +2,8 @@ import sys
 import os
 from PIL import Image, ImageQt
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import QPixmap
-from PyQt5.QtCore import QRectF, Qt, QCoreApplication
+from PyQt5.QtGui import QPixmap, QPen
+from PyQt5.QtCore import QRectF, Qt, QPoint, QPointF
 from PyQt5 import uic
 
 form_class = uic.loadUiType("Graphics.ui")[0]
@@ -17,7 +17,8 @@ class MyWindow(QMainWindow, form_class):
         self.imgQ = []
         self.selDir = os.path.dirname(os.path.realpath(__file__))
         self.scene = QGraphicsScene()
-        self.ROIRect = QGraphicsRectItem(QRectF(0, 0, 100, 100))
+        self.ROIRect = []
+        # self.ROIRect = QGraphicsRectItem(QRectF(0, 0, 100, 100))
         # self.ROIRect.setFlag(QGraphicsItem.ItemIsMovable, True)
 
         self.pushButton.clicked.connect(self.pushButton_clicked)
@@ -53,13 +54,30 @@ class MyWindow(QMainWindow, form_class):
         self.imgQ = ImageQt.ImageQt(img)
         pixMap = QPixmap.fromImage(self.imgQ)
         self.scene.addPixmap(pixMap)
-        self.scene.update()
+        # self.scene.update()
         self.graphicsView.setScene(self.scene)
         self.graphicsView.fitInView(QRectF(0, 0, width, height), Qt.KeepAspectRatio)
 
     def drawROIRect(self):
         # TODO
+        rect = QRectF(0, 0, 300, 200)
+        self.ROIRect = self.scene.addRect(rect)
+        self.ROIRect.setPen(QPen(Qt.red, 2))
+        self.ROIRect.setFlags(QGraphicsItem.ItemIsSelectable
+                              | QGraphicsItem.ItemIsMovable
+                              | QGraphicsItem.ItemIsFocusable
+                              | QGraphicsItem.ItemSendsGeometryChanges
+                              | QGraphicsItem.ItemSendsScenePositionChanges)
+        self.ROIRect.setPos(QPointF(100, 100))
         self.scene.addItem(self.ROIRect)
+        # self.graphicsView.setScene(self.scene)
+
+    # TODO
+    def mouseMoveEvent(self, e):
+        if e.buttons() & Qt.LeftButton:
+            self.ROIRect.mouseMoveEvent(e)
+        if e.buttons() & Qt.RightButton:
+            self.ROIRect.setRect(QRectF(QPoint(), e.pos()).normalized())
 
 
 if __name__ == '__main__':

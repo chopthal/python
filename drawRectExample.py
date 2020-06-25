@@ -34,3 +34,13 @@ class MainWindow(QtWidgets.QMainWindow):
         scene =GraphicsScene(self)
         view = QtWidgets.QGraphicsView(scene)
         self.setCentralWidget(view)
+
+
+if __name__ == '__main__':
+    import sys
+
+    app = QtWidgets.QApplication(sys.argv)
+    w = MainWindow()
+    w.resize(640, 480)
+    w.show()
+    sys.exit(app.exec_())
