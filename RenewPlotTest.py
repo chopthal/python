@@ -1,36 +1,87 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import time
+from matplotlib.widgets import Button, CheckButtons
+# import time
 
 
-def reNewAxis(new_y):
-    print(new_y)
-    l.set_ydata(new_y)
-    plt.draw()
+# Variables
 
 
-def autoScaleAxis():
-    tmpX = l.get_xdata
-    tmpY = l.get_ydata
-    plt.axes([np.min(tmpX), np.max(tmpX)], [np.min(tmpY), np.max(tmpY)])
+# Definitions
+
+class BtnActions:
+
+    def __init__(self):
+        self.stopFlag = 0
+
+    def StartWOPlot(self):
+        print('StartWOPlot_Clicked')
+
+    def Start(self):
+        self.stopFlag = 0
+        print('Start_Clicked')
+        x = []
+        y = []
+        tmpX = []
+        # tmpY = []
+        t = 0
+        line1, = ax.plot(x, y)
+
+        while self.stopFlag == 0:
+            tmpX.append(t)
+            # tmpY = tmpX * 2
+            x = np.array(tmpX)
+            y = np.sqrt(x)
+
+            line1.set_xdata(x)
+            line1.set_ydata(y)
+            plt.draw()
+            plt.pause(0.001)
+
+            t = t + 0.01
+
+    def Stop(self):
+        print('Stop_Clicked')
+        self.stopFlag = 1
+
+    def LED1(self):
+        print('LED1_Clicked')
+
+    def LED2(self):
+        print('LED2_Clicked')
+
+    def LEDOff(self):
+        print('LEDOff_Clicked')
 
 
 # plt.ion()
 fig, ax = plt.subplots()
+plt.subplots_adjust(bottom=0.2, top=0.9)
 
-x = np.arange(0, 1, 0.01)
-y = np.cos(x)
-l, = ax.plot(x, y)
 
-tmp = y
+# Make Buttons
+axBtnStartWOPlot = plt.axes([0.16, 0.05, 0.2, 0.075])
+btnStartWOPlot = Button(axBtnStartWOPlot, 'Start W/O Plot')
+btnStartWOPlot.on_clicked(BtnActions.StartWOPlot)
 
-while True:
-    time.sleep(3)
-    tmp = tmp*y
-    reNewAxis(tmp)
-    plt.draw()
-    plt.pause(0.01)
-    autoScaleAxis()
+axBtnStart = plt.axes([0.37, 0.05, 0.1, 0.075])
+btnStart = Button(axBtnStart, 'Start')
+btnStart.on_clicked(BtnActions.Start)
 
+axBtnStop = plt.axes([0.48, 0.05, 0.1, 0.075])
+btnStop = Button(axBtnStop, 'Stop')
+btnStop.on_clicked(BtnActions.Stop)
+
+axBtnLED1 = plt.axes([0.59, 0.05, 0.1, 0.075])
+btnLED1 = Button(axBtnLED1, 'LED1')
+btnLED1.on_clicked(BtnActions.LED1)
+
+axBtnLED2 = plt.axes([0.7, 0.05, 0.1, 0.075])
+btnLED2 = Button(axBtnLED2, 'LED2')
+btnLED2.on_clicked(BtnActions.LED2)
+
+axBtnLEDOff = plt.axes([0.81, 0.05, 0.1, 0.075])
+btnLEDOff = Button(axBtnLEDOff, 'LED Off')
+btnLEDOff.on_clicked(BtnActions.LEDOff)
 
 plt.show()
