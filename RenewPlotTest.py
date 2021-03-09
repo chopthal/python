@@ -31,13 +31,14 @@ class BtnActions:
             tmpX.append(t)
             # tmpY = tmpX * 2
             x = np.array(tmpX)
-            y = np.sqrt(x)
+            y = np.power(x, 2)
 
             line1.set_xdata(x)
             line1.set_ydata(y)
-            plt.draw()
-            plt.pause(0.001)
 
+            plt.axis([np.min(x), np.max(x), np.min(y), np.max(y)])
+            # plt.draw()
+            plt.pause(1)
             t = t + 0.01
 
     def Stop(self):
@@ -55,6 +56,8 @@ class BtnActions:
 
 
 # plt.ion()
+fig = plt.figure(1)
+ax = plt.plot(211)
 fig, ax = plt.subplots()
 plt.subplots_adjust(bottom=0.2, top=0.9)
 
