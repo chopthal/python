@@ -1,0 +1,69 @@
+<body>
+<!-- <img class="fit-picture" src="/static/images/{{ filename }}"></img> -->
+{% if filename %}
+<h1>filename : {{ filename }}</h1>
+<div>
+  <div>
+    <form action = "{{ url_for('main.count_circles', filename=filename) }}" method = "POST">
+      <button type="submit">Count</button>
+    <form>
+  </div>
+  <div>
+  <img src="/static/images/{{ filename }}" style="max-width:800px; width:100%"></img>
+  </div>
+</div>
+{% endif %}
+
+{% if result_img %}
+<div>
+  <h1>Count result : {{ count_result }}</h1>
+  <img src="/static/images/{{ result_img }}" style="max-width:800px; width:100%"></img>
+</div>
+{% endif %}
+
+<div>
+<form method="POST">
+  <div>
+    <label for="min_radius_percent">Min radius (% of width) : </label>
+    <input name="min_radius_percent"
+    type="range" oninput="document.getElementById('min_radius_percent_value').innerHTML=this.value;"
+    min="0" max="100"  value="{{ min_radius_percent or 5.0 }}"/>
+    <span id="min_radius_percent_value">{{ min_radius_percent or 5.0 }}</span>%
+  </div>
+  <div>
+    <label for="max_radius_percent">Max radius (% of width) : </label>
+    <input name="max_radius_percent"
+    type="range"
+    oninput="document.getElementById('max_radius_percent_value').innerHTML=this.value;"
+    min="0" max="100" value="{{ max_radius_percent or 15.0 }}"/>
+    <span id="max_radius_percent_value">{{ max_radius_percent or 15.0 }}</span>%
+  </div>
+  <div>
+    <label for="min_distance_percent">Min distance (circle-circle, % of width) : </label>
+    <input name="min_distance_percent"
+    type="range"
+    oninput="document.getElementById('min_distance_percent_value').innerHTML=this.value;"
+    min="0" max="100" value="{{ min_distance_percent or 5.0 }}"/>
+    <span id="min_distance_percent_value">{{ min_distance_percent or 5.0 }}</span>%
+  </div>
+  <div>
+    <label for="parameter1">parameter1 : </label>
+    <input name="parameter1"
+    type="range"
+    oninput="document.getElementById('parameter1_value').innerHTML=this.value;"
+    min="0" max="100" value="{{ parameter1 or 30.0 }}"/>
+    <span id="parameter1_value">{{ parameter1 or 30.0 }}</span>
+  </div>
+  <div>
+    <label for="parameter2">parameter2 : </label>
+    <input name="parameter2"
+    type="range"
+    oninput="document.getElementById('parameter2_value').innerHTML=this.value;"
+    min="0" max="100" value="{{ parameter2 or 50.0 }}"/>
+    <span id="parameter2_value">{{ parameter2 or 50.0 }}</span>
+  </div>
+  <div><button type="submit">apply</button></div>
+</form>
+</div>
+
+</body>

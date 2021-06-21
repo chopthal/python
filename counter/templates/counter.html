@@ -1,0 +1,11 @@
+<html>
+  <body>
+    <div>
+      <form action = "{{ url_for('main.counter') }}" method = "POST"
+            enctype = "multipart/form-data">
+        <input type = "file" name = "file" accept="image/png, image/jpeg"></input>
+        <input type = "submit"></input>
+      </form>
+    </div>    
+  </body>
+</html>
