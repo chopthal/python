@@ -1,0 +1,547 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "id": "7c147d3b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import torch\n",
+    "import torch.nn as nn\n",
+    "import torchvision.datasets as dsets\n",
+    "import torchvision.transforms as transforms\n",
+    "import torchvision\n",
+    "from torch.utils.data import Dataset\n",
+    "from torch.utils.data import DataLoader\n",
+    "import cv2\n",
+    "\n",
+    "import torch.nn.init\n",
+    "\n",
+    "import os\n",
+    "import PIL"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "id": "c810344d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import numpy as np\n",
+    "from matplotlib import pyplot as plt\n",
+    "from matplotlib.pyplot import imshow, imread\n",
+    "%matplotlib inline"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "id": "0b88c007",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "device = cuda\n"
+     ]
+    }
+   ],
+   "source": [
+    "device = 'cuda' if torch.cuda.is_available() else 'cpu'\n",
+    "\n",
+    "torch.manual_seed(777)\n",
+    "if device == 'cuda':\n",
+    "    torch.cuda.manual_seed_all(777)\n",
+    "    \n",
+    "print('device =', device)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "id": "6271bc0b",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class CustomDataset(Dataset):\n",
+    "    \n",
+    "    def __init__(self, root, transform=None):             \n",
+    "        \n",
+    "        self.transform = transform        \n",
+    "        dir_name_list = os.listdir(root)\n",
+    "        dir_list = []\n",
+    "        for dir_name in dir_name_list:    \n",
+    "            dir_list.append(os.path.join(root, dir_name))\n",
+    "\n",
+    "        no_imgs = 0\n",
+    "        no_labels = len(dir_list)\n",
+    "        list_labels = []\n",
+    "        criterion_log = []\n",
+    "        criterion_sum = 0\n",
+    "        image_file_list = []\n",
+    "\n",
+    "        for i, dir_name in enumerate(dir_name_list):\n",
+    "            image_file_list += os.listdir(os.path.join(root, dir_name))    \n",
+    "            criterion_log.append(len(image_file_list))\n",
+    "            no_imgs = criterion_log[i]\n",
+    "            \n",
+    "        self.criterion_log = criterion_log\n",
+    "        self.image_file_list = image_file_list      \n",
+    "        self.dir_list = dir_list\n",
+    "        \n",
+    "        \n",
+    "    def __len__(self):\n",
+    "        \n",
+    "        return len(self.image_file_list)\n",
+    "    \n",
+    "        \n",
+    "    def __getitem__(self, idx):\n",
+    "        \n",
+    "        image_file = self.image_file_list[idx]\n",
+    "        label = []\n",
+    "        \n",
+    "        for i, criterion in enumerate(self.criterion_log):\n",
+    "            if idx < criterion:\n",
+    "                label = i\n",
+    "                break\n",
+    "                \n",
+    "        path_name_img = os.path.join(self.dir_list[label], self.image_file_list[idx])        \n",
+    "        image_org = Image.open(path_name_img).convert('RGB')\n",
+    "        image_resize = image_org.resize((224, 224))\n",
+    "#         image_toRGB = cv2.cvtColor(image_resize, cv2.COLOR_GRAY2RGB)\n",
+    "#         print(image_resize)\n",
+    "        image = np.asarray(image_resize)  # 224x224x3\n",
+    "        image = np.transpose(image, (2, 0, 1))\n",
+    "#         print(image.shape)\n",
+    "\n",
+    "        sample = {'image' : image, 'label' : label}\n",
+    "        \n",
+    "        if self.transform:\n",
+    "            sample = self.transform(sample)\n",
+    "        \n",
+    "        return sample['image'], sample['label']    "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "id": "b655b200",
+   "metadata": {},
+   "outputs": [
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAaAAAABpCAYAAAB8pveRAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjQuMSwgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy/Z1A+gAAAACXBIWXMAAAsTAAALEwEAmpwYAAAEfklEQVR4nO3cPYhcZRTH4f8xCYiaYCQWGo2FiKKFdrGSFAFtBBsbFRUJ2qtgKYjgBwRBLOwUo50WohZiYWws0qWwsfG7iiYhBAQ/eC3mikPMbozu5OS6zwMvzJ2dO3OZE/jN3LvZGmMEAC60S7oPAIDNSYAAaCFAALQQIABaCBAALQQIgBatAaqqw1V14ELvy79nZvNjZvOzWWa2IQGqqq+rav9GPFenWnipqn6a1ktVVd3HtQpmNj9mNj9mtr6tG3Fw/yOPJ7kvye1JRpJPknyV5PXGY2J9ZjY/ZjY/K5nZSk/BVdXOqvqwqo5V1Ynp9nVnPOzGqjpSVaeq6v2qumpp/zur6vOqOllVR6tq3yqPN8kjSQ6OMb4fY/yQ5GCSR1f8mhcVM5sfM5sfM1tY9TWgS5K8keSGJHuS/JzktTMe83CSx5Jck+S3JK8mSVXtTvJRkueTXJXk6STvVdXV53rRqnpgGsxaa88au96W5OjS9tHpvs3EzObHzObHzJJkjPGfV5Kvk+z/B4+7I8mJpe3DSV5c2r41yS9JtiR5JsmhM/b/OMkjS/se2IjjX3r+35PcsrR9UxZfN2sjX+diWGY2v2Vm81tmtv5a6TWgqrosyStJ7kmyc7p7e1VtGWP8Pm1/t7TLN0m2JdmVxSeD+6vq3qWfb0vy6QoP+XSSHUvbO5KcHtM7vhmY2fyY2fyY2cKqT8E9leTmJHvHGDuS3DXdv/zbE9cv3d6T5NckP2bx5h8aY1y5tC4fY7x4rhetqger6vQ6a62vmV9kcZHtT7dP920mZjY/ZjY/ZpaNDdC2qrp0aW1Nsj2Lc5snpwtoz55lv4eq6tbpE8FzSd6dPgG8neTeqrq7qrZMz7nvLBfq/maM8c4Y44p11rdr7PpWkierandVXZvFP5I3z/+tmA0zmx8zmx8zW+eANuo85zhjPZ/k2izOR55O8mWSJ6afbR1/nat8IcmRJKeSfJBk19Lz7k3yWZLjSY5lceFtz9K+G32es5K8PL3e8en2/+68tJnNc5nZ/JaZrb9qenIAuKD8LTgAWggQAC0ECIAWAgRAi3P9R1S/oXB+Loa/6Gtm58fM5sfM5uesM/MNCIAWAgRACwECoIUAAdBCgABoIUAAtBAgAFoIEAAtBAiAFgIEQAsBAqCFAAHQQoAAaCFAALQQIABaCBAALQQIgBYCBEALAQKghQAB0EKAAGghQAC0ECAAWggQAC0ECIAWAgRACwECoIUAAdBCgABoIUAAtBAgAFoIEAAtBAiAFgIEQAsBAqCFAAHQQoAAaCFAALQQIABaCBAALQQIgBYCBEALAQKghQAB0EKAAGghQAC0ECAAWggQAC0ECIAWAgRACwECoIUAAdBCgABoIUAAtBAgAFoIEAAtBAiAFgIEQAsBAqCFAAHQQoAAaCFAALQQIABaCBAALQQIgBYCBEALAQKghQAB0EKAAGghQAC0ECAAWggQAC0ECIAWAgRACwECoEWNMbqPAYBNyDcgAFoIEAAtBAiAFgIEQAsBAqCFAAHQ4g9tKeG4pQ4ypgAAAABJRU5ErkJggg==\n",
+      "text/plain": [
+       "<Figure size 432x288 with 4 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "from PIL import Image\n",
+    "\n",
+    "train_data = CustomDataset(root='./custom_data/train')\n",
+    "test_data = CustomDataset(root='./custom_data/train')\n",
+    "\n",
+    "i = 0\n",
+    "for x, y in train_data:    \n",
+    "    \n",
+    "    img = x\n",
+    "    label = y\n",
+    "    ax = plt.subplot(1, 4, i+1)    \n",
+    "    plt.tight_layout()\n",
+    "    ax.axis('off')\n",
+    "    ax.set_title(f'Label = {label}')   \n",
+    "    imshow(np.transpose(img, (1, 2, 0)))\n",
+    "#     imshow(img)        \n",
+    "    \n",
+    "    if i == 3:                        \n",
+    "        break    \n",
+    "        \n",
+    "    i += 1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "id": "3efab758",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "learning_rate = 0.001\n",
+    "training_epochs = 15\n",
+    "batch_size = 1"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 20,
+   "id": "fed207d1",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "torch.Size([3, 224, 224])\n",
+      "tensor([0])\n"
+     ]
+    },
+    {
+     "data": {
+      "image/png": "iVBORw0KGgoAAAANSUhEUgAAAOcAAADnCAYAAADl9EEgAAAAOXRFWHRTb2Z0d2FyZQBNYXRwbG90bGliIHZlcnNpb24zLjQuMSwgaHR0cHM6Ly9tYXRwbG90bGliLm9yZy/Z1A+gAAAACXBIWXMAAAsTAAALEwEAmpwYAAACyUlEQVR4nO3YsQ2AMAwAQYLYf+UwAJFSAV/clXHj5mUpY855AD3n3wsAa+KEKHFClDghSpwQdW3mvnLhfWP16HJClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFClDghSpwQJU6IEidEiROixAlR4oQocUKUOCFKnBAlTogSJ0SJE6LECVHihChxQpQ4IUqcECVOiBInRIkTosQJUeKEKHFC1LWZj0+2AB5cTogSJ0SJE6LECVHihChxQtQNC9kF0JXWWKoAAAAASUVORK5CYII=\n",
+      "text/plain": [
+       "<Figure size 432x288 with 1 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "data_loader = DataLoader(dataset=train_data, batch_size=batch_size, shuffle=True, drop_last = True)\n",
+    "\n",
+    "for img, label in data_loader:        \n",
+    "    for i in range(batch_size):\n",
+    "        ax = plt.subplot(1, batch_size, i+1)\n",
+    "        ax.axis('off')\n",
+    "        print(img[i].shape)\n",
+    "#         img = np.transpose(img, (1, 2, 0))\n",
+    "        imshow(np.transpose(img[i], (1, 2, 0)))\n",
+    "#         print(img.shape)\n",
+    "        break\n",
+    "    print(label)\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "id": "c4c7a0be",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "import torchvision.models.vgg as vgg"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "id": "b1acb8f0-ce58-416f-9452-7a501323e475",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "cfg = [32,32,'M', 64,64,128,128,128,'M',\n",
+    "       256,256,256,512,512,512,'M'] #13 + 3 =vgg16"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "id": "e13ee7db-5300-4033-a212-ddcb74ca7ec9",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "class VGG(nn.Module):\n",
+    "\n",
+    "    def __init__(self, features, num_classes=2, init_weights=True):\n",
+    "        super(VGG, self).__init__()\n",
+    "        self.features = features\n",
+    "        #self.avgpool = nn.AdaptiveAvgPool2d((7, 7))\n",
+    "        self.classifier = nn.Sequential(\n",
+    "            nn.Linear(512 * 4 * 4, 4096),\n",
+    "            nn.ReLU(True),\n",
+    "            nn.Dropout(),\n",
+    "            nn.Linear(4096, 4096),\n",
+    "            nn.ReLU(True),\n",
+    "            nn.Dropout(),\n",
+    "            nn.Linear(4096, num_classes),\n",
+    "        )\n",
+    "        if init_weights:\n",
+    "            self._initialize_weights()\n",
+    "\n",
+    "    def forward(self, x):\n",
+    "        x = self.features(x)\n",
+    "        #x = self.avgpool(x)\n",
+    "        x = x.view(x.size(0), -1)\n",
+    "        x = self.classifier(x)\n",
+    "        return x\n",
+    "\n",
+    "    def _initialize_weights(self):\n",
+    "        for m in self.modules():\n",
+    "            if isinstance(m, nn.Conv2d):\n",
+    "                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')\n",
+    "                if m.bias is not None:\n",
+    "                    nn.init.constant_(m.bias, 0)\n",
+    "            elif isinstance(m, nn.BatchNorm2d):\n",
+    "                nn.init.constant_(m.weight, 1)\n",
+    "                nn.init.constant_(m.bias, 0)\n",
+    "            elif isinstance(m, nn.Linear):\n",
+    "                nn.init.normal_(m.weight, 0, 0.01)\n",
+    "                nn.init.constant_(m.bias, 0)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "id": "74e7c876",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "vgg16 = VGG(vgg.make_layers(cfg), 2, True).to(device)\n",
+    "# print(vgg16)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "id": "303597e1-ee88-43d3-b3cd-6526c05def32",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stderr",
+     "output_type": "stream",
+     "text": [
+      "C:\\Anaconda3\\envs\\Pytorch_DL\\lib\\site-packages\\torch\\nn\\functional.py:718: UserWarning: Named tensors and all their associated APIs are an experimental feature and subject to change. Please do not use them for anything important until they are released as stable. (Triggered internally at  ..\\c10/core/TensorImpl.h:1156.)\n",
+      "  return torch.max_pool2d(input, kernel_size, stride, padding, dilation, ceil_mode)\n"
+     ]
+    },
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "torch.Size([1, 2])\n"
+     ]
+    }
+   ],
+   "source": [
+    "a = torch.Tensor(1, 3, 224, 224).to(device)\n",
+    "out = vgg16(a)\n",
+    "print(out.shape)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "id": "185e6b1d",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "criterion = nn.CrossEntropyLoss().to(device)\n",
+    "optimizer = torch.optim.SGD(vgg16.parameters(), lr = 0.005, momentum = 0.9)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 14,
+   "id": "a4db0da4",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "(6, 1)\n"
+     ]
+    }
+   ],
+   "source": [
+    "print(torch.cuda.get_device_capability())\n",
+    "torch.cuda.empty_cache()"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 15,
+   "id": "4785fbe1-7f30-4349-9c05-fde02482d821",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "Learning Started!\n"
+     ]
+    },
+    {
+     "ename": "RuntimeError",
+     "evalue": "CUDA out of memory. Tried to allocate 6.12 GiB (GPU 0; 4.00 GiB total capacity; 445.13 MiB already allocated; 2.26 GiB free; 460.00 MiB reserved in total by PyTorch)",
+     "output_type": "error",
+     "traceback": [
+      "\u001b[1;31m---------------------------------------------------------------------------\u001b[0m",
+      "\u001b[1;31mRuntimeError\u001b[0m                              Traceback (most recent call last)",
+      "\u001b[1;32m<ipython-input-15-c863a1611b74>\u001b[0m in \u001b[0;36m<module>\u001b[1;34m\u001b[0m\n\u001b[0;32m     20\u001b[0m \u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0;32m     21\u001b[0m         \u001b[0mcost\u001b[0m \u001b[1;33m=\u001b[0m \u001b[0mcriterion\u001b[0m\u001b[1;33m(\u001b[0m\u001b[0mhypothesis\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mY\u001b[0m\u001b[1;33m)\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[1;32m---> 22\u001b[1;33m         \u001b[0mcost\u001b[0m\u001b[1;33m.\u001b[0m\u001b[0mbackward\u001b[0m\u001b[1;33m(\u001b[0m\u001b[1;33m)\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0m\u001b[0;32m     23\u001b[0m         \u001b[0moptimizer\u001b[0m\u001b[1;33m.\u001b[0m\u001b[0mstep\u001b[0m\u001b[1;33m(\u001b[0m\u001b[1;33m)\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0;32m     24\u001b[0m \u001b[1;33m\u001b[0m\u001b[0m\n",
+      "\u001b[1;32mC:\\Anaconda3\\envs\\Pytorch_DL\\lib\\site-packages\\torch\\_tensor.py\u001b[0m in \u001b[0;36mbackward\u001b[1;34m(self, gradient, retain_graph, create_graph, inputs)\u001b[0m\n\u001b[0;32m    253\u001b[0m                 \u001b[0mcreate_graph\u001b[0m\u001b[1;33m=\u001b[0m\u001b[0mcreate_graph\u001b[0m\u001b[1;33m,\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0;32m    254\u001b[0m                 inputs=inputs)\n\u001b[1;32m--> 255\u001b[1;33m         \u001b[0mtorch\u001b[0m\u001b[1;33m.\u001b[0m\u001b[0mautograd\u001b[0m\u001b[1;33m.\u001b[0m\u001b[0mbackward\u001b[0m\u001b[1;33m(\u001b[0m\u001b[0mself\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mgradient\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mretain_graph\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mcreate_graph\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0minputs\u001b[0m\u001b[1;33m=\u001b[0m\u001b[0minputs\u001b[0m\u001b[1;33m)\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0m\u001b[0;32m    256\u001b[0m \u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0;32m    257\u001b[0m     \u001b[1;32mdef\u001b[0m \u001b[0mregister_hook\u001b[0m\u001b[1;33m(\u001b[0m\u001b[0mself\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mhook\u001b[0m\u001b[1;33m)\u001b[0m\u001b[1;33m:\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n",
+      "\u001b[1;32mC:\\Anaconda3\\envs\\Pytorch_DL\\lib\\site-packages\\torch\\autograd\\__init__.py\u001b[0m in \u001b[0;36mbackward\u001b[1;34m(tensors, grad_tensors, retain_graph, create_graph, grad_variables, inputs)\u001b[0m\n\u001b[0;32m    145\u001b[0m         \u001b[0mretain_graph\u001b[0m \u001b[1;33m=\u001b[0m \u001b[0mcreate_graph\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0;32m    146\u001b[0m \u001b[1;33m\u001b[0m\u001b[0m\n\u001b[1;32m--> 147\u001b[1;33m     Variable._execution_engine.run_backward(\n\u001b[0m\u001b[0;32m    148\u001b[0m         \u001b[0mtensors\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mgrad_tensors_\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mretain_graph\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0mcreate_graph\u001b[0m\u001b[1;33m,\u001b[0m \u001b[0minputs\u001b[0m\u001b[1;33m,\u001b[0m\u001b[1;33m\u001b[0m\u001b[1;33m\u001b[0m\u001b[0m\n\u001b[0;32m    149\u001b[0m         allow_unreachable=True, accumulate_grad=True)  # allow_unreachable flag\n",
+      "\u001b[1;31mRuntimeError\u001b[0m: CUDA out of memory. Tried to allocate 6.12 GiB (GPU 0; 4.00 GiB total capacity; 445.13 MiB already allocated; 2.26 GiB free; 460.00 MiB reserved in total by PyTorch)"
+     ]
+    }
+   ],
+   "source": [
+    "# Training\n",
+    "total_batch = len(data_loader)\n",
+    "\n",
+    "print('Learning Started!')        \n",
+    "\n",
+    "for epoch in range(training_epochs):\n",
+    "    avg_cost = 0\n",
+    "    \n",
+    "    for X, Y in data_loader:\n",
+    "\n",
+    "        X = X.to(device)\n",
+    "        Y = Y.to(device)\n",
+    "        \n",
+    "        optimizer.zero_grad()\n",
+    "        hypothesis = vgg16(X.float())\n",
+    "        \n",
+    "        cost = criterion(hypothesis, Y)        \n",
+    "        cost.backward()\n",
+    "        optimizer.step()\n",
+    "        \n",
+    "        avg_cost += cost / total_batch\n",
+    "        \n",
+    "    print(f'[Epoch:{epoch+1}] cost = {avg_cost}')\n",
+    "    \n",
+    "print('Learning fished!')        "
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 34,
+   "id": "bc09fb26",
+   "metadata": {},
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "tensor([0, 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 1, 0, 0,\n",
+      "        0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 0, 0, 1,\n",
+      "        0, 0])\n"
+     ]
+    },
+    {
+     "data": {
+      "image/png": "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\n",
+      "text/plain": [
+       "<Figure size 432x288 with 50 Axes>"
+      ]
+     },
+     "metadata": {
+      "needs_background": "light"
+     },
+     "output_type": "display_data"
+    }
+   ],
+   "source": [
+    "data_loader2 = DataLoader(dataset=test_data, batch_size=batch_size, shuffle=True, drop_last = True)\n",
+    "\n",
+    "for img, label in data_loader2:        \n",
+    "    for i in range(batch_size):\n",
+    "        ax = plt.subplot(1, batch_size, i+1)\n",
+    "        ax.axis('off')\n",
+    "        imshow(img[i], cmap='gray')\n",
+    "#         print(img[i])\n",
+    "#         print(img[i].shape)\n",
+    "    print(label)\n",
+    "    break"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 35,
+   "id": "ac4beb87",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# model save / load\n",
+    "# PATH = \n",
+    "# torch.save(model.state_dict(), PATH)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 36,
+   "id": "23b9b684",
+   "metadata": {
+    "scrolled": true
+   },
+   "outputs": [
+    {
+     "name": "stdout",
+     "output_type": "stream",
+     "text": [
+      "tensor(52.5000, device='cuda:0')\n"
+     ]
+    }
+   ],
+   "source": [
+    "with torch.no_grad():    \n",
+    "    \n",
+    "    model.eval()\n",
+    "    \n",
+    "    total = 0\n",
+    "    correct = 0\n",
+    "    \n",
+    "    for X_test, Y_test in data_loader2:\n",
+    "        X_test = X_test.to(device)\n",
+    "        \n",
+    "        X_test = X_test.unsqueeze(1)\n",
+    "        Y_test = Y_test.to(device)\n",
+    "        \n",
+    "        output = model(X_test.float())\n",
+    "        _, predict = torch.max(output.data, 1)\n",
+    "        \n",
+    "        total += Y_test.size(0)\n",
+    "        correct += (predict==Y_test).sum()\n",
+    "        \n",
+    "    avg_cost = cost / total_batch\n",
+    "    accuracy = 100*correct/total\n",
+    "    \n",
+    "    print(accuracy)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": null,
+   "id": "8e63a148-07a6-4b0b-8c0c-788aabe50401",
+   "metadata": {},
+   "outputs": [],
+   "source": [
+    "# Most simple model : VGG 적용해보기\n",
+    "# VGG feature 이미지 보기\n",
+    "# 이후 image processing 해보기"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.9.5"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 5
+}
